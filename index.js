@@ -4,6 +4,9 @@ const { MongoClient, ServerApiVersion } = require('mongodb');
 const app = express();
 const cors = require('cors');
 require('dotenv').config();
+const nodemailer = require('nodemailer');
+const sgTransport = require('nodemailer-sendgrid-transport');
+
 const port = process.env.PORT || 5000;
 
 app.use(cors());
@@ -25,6 +28,47 @@ function verifyJWT(req, res, next) {
         }
         req.decoded = decoded;
         next();
+    });
+}
+
+const emailSenderOptions = {
+    auth: {
+        api_key: process.env.EMAIL_SENDER_KEY
+    }
+}
+
+var emailClient = nodemailer.createTransport(sgTransport(emailSenderOptions));
+
+function sendAppointmentEmail(booking) {
+    const { patient, patientName, treatment, date, slot } = booking;
+
+    const email = {
+        from: process.env.EMAIL_SENDER,
+        to: patient,
+        subject: `Your Appointment for ${treatment} is on ${date} at ${slot} is Confirmed`,
+        text: `Your Appointment for ${treatment} is on ${date} at ${slot} is Confirmed`,
+        html: `
+        <div>
+          <p> Hello ${patientName}, </p>
+          <h3>Your Appointment for ${treatment} is confirmed</h3>
+          <p>Looking forward to seeing you on ${date} at ${slot}.</p>
+          
+          <h3>Our Address</h3>
+          <p>Mirer Maydan, Sylhet</p>
+          <p>Bangladesh</p>
+          <small>Visit for more information</small>
+          <a href="https://doctors-portal-7rahib.web.app/">Doctors Portal</a>
+        </div>
+      `
+    };
+
+    emailClient.sendMail(email, function (err, info) {
+        if (err) {
+            console.log(err);
+        }
+        else {
+            console.log('Message sent: ', info);
+        }
     });
 }
 
@@ -127,6 +171,7 @@ async function run() {
                 return res.send({ success: false, booking: exists })
             }
             const result = await bookingCollection.insertOne(booking)
+            sendAppointmentEmail(booking)
             return res.send({ success: true, result })
         })
 
