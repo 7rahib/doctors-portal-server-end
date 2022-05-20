@@ -45,12 +45,12 @@ function sendAppointmentEmail(booking) {
     const email = {
         from: process.env.EMAIL_SENDER,
         to: patient,
-        subject: `Your Appointment for ${treatment} is on ${date} at ${slot} is Confirmed`,
-        text: `Your Appointment for ${treatment} is on ${date} at ${slot} is Confirmed`,
+        subject: `Your appointment for ${treatment} is on ${date} at ${slot} is confirmed`,
+        text: `Your appointment for ${treatment} is on ${date} at ${slot} is confirmed`,
         html: `
         <div>
           <p> Hello ${patientName}, </p>
-          <h3>Your Appointment for ${treatment} is confirmed</h3>
+          <h3>Your appointment for ${treatment} is confirmed</h3>
           <p>Looking forward to seeing you on ${date} at ${slot}.</p>
           
           <h3>Our Address</h3>
